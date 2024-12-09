@@ -1,0 +1,14 @@
+*.log
+
+.env
+
+*tmp*
+*temp*
+
+node_modules
+
+dist
+
+*secret*
+
+.DS_Store
