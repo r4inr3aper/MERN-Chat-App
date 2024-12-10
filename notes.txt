@@ -1,0 +1,22 @@
+ts-node (DEV)
+This is used during development to run TypeScript files directly without needing This is used during the build process to compile TypeScript files to JavaScript.
+to compile them first. 
+
+tsc (BUILD)
+This provides faster feedback and easier debugging The compiled JavaScript files are what you run in a production environment.
+during development.
+
+Prisma ORM: used for making it easy for Nodejs and Typescript applications to work databases.
+
+SELECT id, name, email, phone_number FROM users WHERE id=20  ->  for Postgres
+users.GetById(20)  ->  for Prisma
+
+NeonDB -> to use Postgres
+
+npx prisma db push
+
+app.get("/api/chats:id", (req,res) => {
+    console.log(req)
+})
+o/p: params: { id: ':617a077e18c25468bc7c4dd4' }
+
