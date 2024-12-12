@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from "mongoose";
 
-interface IChat extends Document {
+export interface IChat extends Document {
   chatName?: string;
   isGroupChat: boolean;
   users: Types.ObjectId[];

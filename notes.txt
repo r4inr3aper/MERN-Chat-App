@@ -20,3 +20,12 @@ app.get("/api/chats:id", (req,res) => {
 })
 o/p: params: { id: ':617a077e18c25468bc7c4dd4' }
 
+npm express-async-handler -> to handle async errors
+
+http://localhost:5000/api/auth/all?search=bro&lastname=meh
+const keyword = req.query;
+console.log(keyword)
+{ search: 'bro', lastname: 'meh' }
+here we are passing the value through queries instead of body
+
+mongoDB operators like $or which searches a query in db, regex

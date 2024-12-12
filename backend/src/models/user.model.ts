@@ -1,12 +1,12 @@
 import { Schema, model, Document, Types } from "mongoose";
 
-interface IUser extends Document {
+export interface IUser extends Document {
+  _id: string,
   name: string;
   email: string;
   password: string;
   pic: string;
-  isAdmin: boolean;
-  matchPassword(enteredPassword: string): Promise<boolean>;
+  // isGod: boolean;
 }
 
 const userSchema = new Schema<IUser>(
@@ -26,7 +26,6 @@ const userSchema = new Schema<IUser>(
     },
     pic: {
       type: String,
-      required: true,
       default: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
     },
     // isGod: { 
