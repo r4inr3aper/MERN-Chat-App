@@ -7,7 +7,7 @@ interface AuthenticatedRequest extends Request {
   user?: IUser;
 }
 
-export const getChats = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const accessChats = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { userId } = req.body;
 
   if (!userId) {
@@ -25,7 +25,7 @@ export const getChats = asyncHandler(async (req: AuthenticatedRequest, res: Resp
   })
     .populate("users", "-password")
     .populate("latestMessage");
-
+  // @ts-ignore
   isChat = await User.populate(isChat, {
     path: "latestMessage.sender",
     select: "name pic email",

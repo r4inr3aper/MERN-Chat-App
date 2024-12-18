@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   pic: string;
-  // isGod: boolean;
+  // isAdmin: boolean;
 }
 
 const userSchema = new Schema<IUser>(

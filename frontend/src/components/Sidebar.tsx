@@ -1,69 +1,81 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { StoreContext } from '../context/StoreContext';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirect
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { StoreContext } from "../context/StoreContext";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  pic?: string;
+}
 
 const Sidebar = () => {
-  const { url, token, logout } = useContext(StoreContext); // Get the URL, token, and logout function from the context
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]); // Store the search results
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>(''); // State to hold error message
-  const navigate = useNavigate(); // To redirect after logout
+  const { url, token, setSelectedChat, chats, setChats, setIsSidebarOpen } = useContext(StoreContext);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
-  // Function to handle the search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
 
-  // Function to fetch users based on the search query
-  const fetchUsers = async () => {
-    if (!searchQuery) {
-      setSearchResults([]); // Clear results if search query is empty
-      return;
-    }
-
+  const accessChat = async (userId: string) => {
     setLoading(true);
-    setError(''); // Reset error state before making the request
     try {
-      const response = await axios.get(`${url}/api/user/all?search=${searchQuery}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSearchResults(response.data); // Set the search results
-    } catch (error: any) {
-      setError('Failed to fetch users. Please try again later.'); // Set error message
-      console.error('Error fetching users:', error);
+      const { data } = await axios.post(
+        `${url}/api/chat`,
+        { userId },
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+
+      setSelectedChat(data);
+      setIsSidebarOpen(false);
+    } catch (error) {
+      console.error("Error accessing chat:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Effect to fetch users when the search query changes
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchUsers();
-    }, 500); // Add debounce for better performance
+  const fetchUsers = async () => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
 
-    return () => clearTimeout(delayDebounceFn); // Cleanup the debounce
-  }, [searchQuery]);
-
-  // Function to handle logout
-  const handleLogout = async () => {
+    setLoading(true);
+    setError("");
     try {
-      await axios.post(`${url}/api/user/logout`, {}, {
+      const response = await axios.get(`${url}/api/user/all?search=${searchQuery}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      logout(); // Clear token from context
-      localStorage.removeItem('token'); // Clear token from localStorage
-      navigate('/'); // Redirect to home or login page
+      setSearchResults(response.data);
     } catch (error) {
-      console.error('Error during logout:', error);
+      setError("Failed to fetch users. Please try again later.");
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
   return (
-    <div className="w-64 bg-gray-100 p-4 h-full shadow-md">
-      {/* Search Bar */}
+    <div className="w-64 bg-white p-4 h-full shadow-lg">
       <div className="mb-4">
         <input
           type="text"
@@ -74,32 +86,26 @@ const Sidebar = () => {
         />
       </div>
 
-      {/* Error Message */}
       {error && <div className="text-red-500 text-sm">{error}</div>}
 
-      {/* Loading Indicator */}
       {loading && <div className="text-gray-500 text-sm">Loading...</div>}
 
-      {/* Search Results */}
-      <div className="mt-4">
+      <div className="mt-4 overflow-y-auto max-h-[400px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
         {searchResults.length > 0 ? (
-          searchResults.map((user: any) => (
-            <div key={user._id} className="p-2 mb-2 bg-white rounded-md shadow-sm hover:bg-gray-200 cursor-pointer">
-              <p className="text-gray-800">{user.name}</p>
+          searchResults.map((user: User) => (
+            <div
+              key={user._id}
+              className="p-2 mb-2 bg-gray-100 rounded-md shadow-sm hover:bg-gray-200 cursor-pointer"
+              onClick={() => accessChat(user._id)}
+            >
+              <p className="text-gray-800 font-semibold">{user.name}</p>
+              <p className="text-gray-600 text-sm">{user.email}</p>
             </div>
           ))
         ) : (
           !loading && <div className="text-gray-500 text-sm">No users found</div>
         )}
       </div>
-
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="mt-4 w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-      >
-        Logout
-      </button>
     </div>
   );
 };

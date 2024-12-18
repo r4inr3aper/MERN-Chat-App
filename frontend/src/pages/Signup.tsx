@@ -8,16 +8,14 @@ const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   if (!storeContext) {
-    throw new Error(
-      "StoreContext is not available. Ensure the provider is wrapped around the component tree."
-    );
+    throw new Error("StoreContext is not available.");
   }
 
   const { url, setToken, token } = storeContext;
 
   useEffect(() => {
     if (token) {
-      navigate("/"); 
+      navigate("/");
     }
   }, [token, navigate]);
 
@@ -67,43 +65,39 @@ const Signup: React.FC = () => {
         onSubmit={onSubmitHandler}
         className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md space-y-6"
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold capitalize">{currState}</h2>
-        </div>
-        <div className="space-y-4">
-          {currState === "sign up" && (
-            <input
-              type="text"
-              name="name"
-              value={data.name}
-              onChange={onChangeHandler}
-              placeholder="Your name"
-              required
-              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          )}
+        <h2 className="text-lg font-semibold capitalize">{currState}</h2>
+        {currState === "sign up" && (
           <input
-            type="email"
-            name="email"
-            value={data.email}
+            type="text"
+            name="name"
+            value={data.name}
             onChange={onChangeHandler}
-            placeholder="Your email"
+            placeholder="Your name"
             required
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border border-gray-300 rounded"
           />
-          <input
-            type="password"
-            name="password"
-            value={data.password}
-            onChange={onChangeHandler}
-            placeholder="Your password"
-            required
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        )}
+        <input
+          type="email"
+          name="email"
+          value={data.email}
+          onChange={onChangeHandler}
+          placeholder="Your email"
+          required
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+        <input
+          type="password"
+          name="password"
+          value={data.password}
+          onChange={onChangeHandler}
+          placeholder="Your password"
+          required
+          className="w-full p-2 border border-gray-300 rounded"
+        />
         <button
           type="submit"
-          className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
+          className="w-full bg-red-500 text-white py-2 rounded"
         >
           {currState === "sign up" ? "Create Account" : "Login"}
         </button>
@@ -112,7 +106,7 @@ const Signup: React.FC = () => {
             <>
               Create a new account?{" "}
               <span
-                className="text-red-500 font-medium cursor-pointer"
+                className="text-red-500 cursor-pointer"
                 onClick={() => setCurrState("sign up")}
               >
                 Click here
@@ -122,7 +116,7 @@ const Signup: React.FC = () => {
             <>
               Already have an account?{" "}
               <span
-                className="text-red-500 font-medium cursor-pointer"
+                className="text-red-500 cursor-pointer"
                 onClick={() => setCurrState("login")}
               >
                 Login here
