@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import mongoose from "mongoose";
 import asyncHandler from "express-async-handler";
 import Chat, { IChat } from "../models/chat.model.js";
 import User, { IUser } from "../models/user.model.js";
@@ -53,6 +54,25 @@ export const accessChats = asyncHandler(async (req: AuthenticatedRequest, res: R
 export const fetchChats = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const results = await Chat.find({ users: { $elemMatch: { $eq: req.user?._id } } })
+      .populate("users", "-password")
+      .populate("groupAdmin", "-password")
+      .populate("latestMessage")
+      .sort({ updatedAt: -1 });
+
+    const populatedResults = await User.populate(results, {
+      path: "latestMessage.sender",
+      select: "name pic email",
+    });
+
+    res.status(200).send(populatedResults);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+export const fetchAllGroups = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const results = await Chat.find({isGroupChat: true})
       .populate("users", "-password")
       .populate("groupAdmin", "-password")
       .populate("latestMessage")
@@ -150,6 +170,31 @@ export const removeFromGroup = asyncHandler(async (req: AuthenticatedRequest, re
   }
 });
 
+export const removeSelfFromGroup = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const { chatId } = req.body;
+
+  if (!chatId) {
+    res.status(400).send({ message: "Chat ID is required" });
+    return;
+  }
+
+  const group = await Chat.findById(chatId);
+  if (!group) {
+    res.status(404).send({ message: "Group not found" });
+    return;
+  }
+
+  if (!group.users.some(user => user.toString() === req.user?._id.toString())) {
+    res.status(400).send({ message: "User not in the group" });
+    return;
+  }
+
+  group.users = group.users.filter(user => user.toString() !== req.user?._id.toString());
+  await group.save();
+
+  res.status(200).send({ message: "Successfully left the group", group });
+});
+
 export const addToGroup = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { chatId, userId } = req.body;
 
@@ -168,6 +213,54 @@ export const addToGroup = asyncHandler(async (req: AuthenticatedRequest, res: Re
     }
 
     res.json(added);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+export const addSelfToGroup = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const { chatId } = req.body;
+
+  if (!chatId) {
+    res.status(400).send({ message: "Chat ID is required" });
+    return;
+  }
+
+  const group = await Chat.findById(chatId);
+  if (!group) {
+    res.status(404).send({ message: "Group not found" });
+    return;
+  }
+
+  if (group.users.some(user => user.toString() === req.user?._id.toString())) {
+    res.status(400).send({ message: "User already in the group" });
+    return;
+  }
+
+  group.users.push(new mongoose.Types.ObjectId(req.user!._id));
+  await group.save();
+
+  res.status(200).send({ message: "Successfully joined the group", group });
+});
+
+
+export const deleteGroupChat = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const chat = await Chat.findById(id);
+
+    if (!chat) {
+      res.status(404).json({ message: 'Group chat not found' });
+      return;
+    }
+
+    if (!chat.isGroupChat) {
+      res.status(400).json({ message: 'Not a group chat' });
+      return;
+    }
+
+    await chat.deleteOne();
+    res.status(200).json({ message: 'Group chat deleted successfully' });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }

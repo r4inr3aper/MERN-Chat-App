@@ -113,7 +113,7 @@ const GroupChatBox: React.FC<GroupChatBoxProps> = ({ closeOverlay }) => {
         {loading && <p>Loading...</p>}
 
         {searchResult.length > 0 && (
-          <div className="mt-2">
+          <div className="mt-2 max-h-40 overflow-y-scroll border border-gray-300 rounded-md">
             {searchResult.map((user) => (
               <div
                 key={user._id}
@@ -141,9 +141,12 @@ const GroupChatBox: React.FC<GroupChatBoxProps> = ({ closeOverlay }) => {
 
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Selected Users</h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-scroll border border-gray-300 rounded-md p-2">
           {selectedUsers.map((user) => (
-            <div key={user._id} className="flex items-center bg-blue-200 p-2 rounded-md">
+            <div
+              key={user._id}
+              className="flex items-center bg-blue-200 p-2 rounded-md"
+            >
               <span>{user.name}</span>
               <button
                 className="ml-2 text-red-500"

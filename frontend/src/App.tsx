@@ -3,7 +3,10 @@ import { useContext } from "react";
 import "./App.css";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
+import ManageChatrooms from "./pages/ManageChatrooms"; // Import the component
 import { StoreContext } from "./context/StoreContext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
   const storeContext = useContext(StoreContext);
@@ -25,7 +28,8 @@ function App() {
   const storeContext = useContext(StoreContext);
 
   return (
-    <div className="p-4 h-screen items-center flex justify-center">
+    <div className="items-center flex justify-center">
+      <ToastContainer />
       <Routes>
         <Route
           path="/"
@@ -39,6 +43,14 @@ function App() {
           path="/signup"
           element={
             storeContext?.isAuthenticated ? <Navigate to="/" replace /> : <Signup />
+          }
+        />
+        <Route
+          path="/manage"
+          element={
+            <ProtectedRoute>
+              <ManageChatrooms />
+            </ProtectedRoute>
           }
         />
       </Routes>

@@ -2,12 +2,12 @@ import React, { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// Define types for context
 interface User {
   _id: string;
   name: string;
   email: string;
   pic?: string;
+  isAdmin: boolean;
 }
 
 interface Chat {
@@ -27,8 +27,11 @@ interface StoreContextType {
   setSelectedChat: (chat: Chat | null) => void;
   chats: Chat[];
   setChats: (chats: Chat[]) => void;
+  groups: Chat[];
+  setGroups: (groups: Chat[]) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
+  isAdmin: boolean;
 }
 
 export const StoreContext = createContext<StoreContextType>({
@@ -41,8 +44,11 @@ export const StoreContext = createContext<StoreContextType>({
   setSelectedChat: () => {},
   chats: [],
   setChats: () => {},
+  groups: [],
+  setGroups: () => {},
   isSidebarOpen: false,
   setIsSidebarOpen: () => {},
+  isAdmin: false,
 });
 
 interface StoreContextProviderProps {
@@ -52,9 +58,11 @@ interface StoreContextProviderProps {
 const StoreContextProvider: React.FC<StoreContextProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [groups, setGroups] = useState<Chat[]>([]);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false); // State for isAdmin
   const navigate = useNavigate();
   const url = "http://localhost:5000";
 
@@ -74,8 +82,10 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({ children })
         }
       );
       setToken(null);
+      setSelectedChat(null);
       localStorage.removeItem("token");
       setIsAuthenticated(false);
+      setIsAdmin(false); 
       navigate("/signup");
     } catch (error) {
       console.error("Error during logout:", error);
@@ -87,10 +97,23 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({ children })
     if (storedToken) {
       setToken(storedToken);
       setIsAuthenticated(true);
+      const fetchUserData = async () => {
+        try {
+          const response = await axios.get(`${url}/api/user/me`, {
+            headers: { Authorization: `Bearer ${storedToken}` },
+          });
+          const userData = response.data.user;
+          setIsAdmin(userData.isAdmin);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          logout(); 
+        }
+      };
+      fetchUserData();
     } else {
       navigate("/signup");
     }
-  }, [navigate]);
+  }, [navigate, token]);
 
   const contextValue: StoreContextType = {
     url,
@@ -104,6 +127,9 @@ const StoreContextProvider: React.FC<StoreContextProviderProps> = ({ children })
     setChats,
     isSidebarOpen,
     setIsSidebarOpen,
+    groups,
+    setGroups,
+    isAdmin,
   };
 
   return (

@@ -2,6 +2,8 @@ import { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { StoreContext } from "../context/StoreContext";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Signup: React.FC = () => {
   const storeContext = useContext(StoreContext);
@@ -32,8 +34,32 @@ const Signup: React.FC = () => {
     setData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const validateFields = () => {
+    if (currState === "sign up" && !data.name.trim()) {
+      toast.error("Name is required.");
+      return false;
+    }
+    if (!data.email.trim()) {
+      toast.error("Email is required.");
+      return false;
+    }
+    if (!data.password.trim()) {
+      toast.error("Password is required.");
+      return false;
+    }
+    if (data.password.length < 6) {
+      toast.error("Password must be of minimum 6 characters.");
+      return false;
+    }
+    return true;
+  };
+
   const onSubmitHandler = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!validateFields()) {
+      return;
+    }
 
     const endpoint =
       currState === "login" ? "/api/user/login" : "/api/user/signup";
@@ -49,23 +75,38 @@ const Signup: React.FC = () => {
 
       if (response.data.success) {
         setToken(response.data.token);
+        toast.success("Logged in successfully!");
         navigate("/");
       } else {
-        alert(response.data.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
       console.error("Error during authentication:", error);
-      alert("An error occurred. Please try again.");
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     }
   };
 
   return (
-    <div className="fixed inset-0 z-10 bg-black bg-opacity-50 flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-10 flex items-center justify-center"
+      style={{
+        backgroundImage: "url('https://wallpaperaccess.com/full/2454628.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <ToastContainer />
       <form
         onSubmit={onSubmitHandler}
-        className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md space-y-6"
+        className="bg-[#404048]/90 p-6 rounded-lg w-[90%] max-w-md space-y-6 shadow-lg"
       >
-        <h2 className="text-lg font-semibold capitalize">{currState}</h2>
+        <h2 className="text-lg font-semibold capitalize text-white">
+          {currState}
+        </h2>
         {currState === "sign up" && (
           <input
             type="text"
@@ -74,7 +115,7 @@ const Signup: React.FC = () => {
             onChange={onChangeHandler}
             placeholder="Your name"
             required
-            className="w-full p-2 border border-gray-300 rounded"
+            className="w-full p-2 rounded text-white bg-[#1c1d22] focus:outline-none"
           />
         )}
         <input
@@ -84,7 +125,7 @@ const Signup: React.FC = () => {
           onChange={onChangeHandler}
           placeholder="Your email"
           required
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 rounded text-white bg-[#1c1d22] focus:outline-none"
         />
         <input
           type="password"
@@ -93,20 +134,20 @@ const Signup: React.FC = () => {
           onChange={onChangeHandler}
           placeholder="Your password"
           required
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 rounded text-white bg-[#1c1d22] focus:outline-none"
         />
         <button
           type="submit"
-          className="w-full bg-red-500 text-white py-2 rounded"
+          className="w-full bg-[#277ecd] text-white py-2 rounded hover:bg-blue-600 transition"
         >
           {currState === "sign up" ? "Create Account" : "Login"}
         </button>
-        <p className="text-center text-sm">
+        <p className="text-center text-sm text-white">
           {currState === "login" ? (
             <>
               Create a new account?{" "}
               <span
-                className="text-red-500 cursor-pointer"
+                className="text-white cursor-pointer underline"
                 onClick={() => setCurrState("sign up")}
               >
                 Click here
@@ -116,7 +157,7 @@ const Signup: React.FC = () => {
             <>
               Already have an account?{" "}
               <span
-                className="text-red-500 cursor-pointer"
+                className="text-white cursor-pointer underline"
                 onClick={() => setCurrState("login")}
               >
                 Login here

@@ -3,12 +3,14 @@ import { Request, Response } from "express";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import Chat from "../models/chat.model.js";
+import upload from "../middlewares/upload.js";
 import { Types } from "mongoose";
 
 interface CustomRequest extends Request {
   user?: {
     _id: Types.ObjectId;
   };
+  file?: Express.Multer.File;
 }
 
 export const allMessages = asyncHandler(async (req: CustomRequest, res: Response): Promise<void> => {
@@ -33,9 +35,15 @@ export const allMessages = asyncHandler(async (req: CustomRequest, res: Response
 
 export const sendMessage = asyncHandler(async (req: CustomRequest, res: Response): Promise<void> => {
   const { content, chatId }: { content: string; chatId: string } = req.body;
+  const file = req.file;
 
-  if (!content || !chatId) {
-    res.status(400).json({ message: "Content and chatId are required" });
+  if (!content && !file) {
+    res.status(400).json({ message: "Content or a file is required" });
+    return;
+  }
+
+  if (!chatId || !Types.ObjectId.isValid(chatId)) {
+    res.status(400).json({ message: "Invalid chat ID format" });
     return;
   }
 
@@ -44,16 +52,16 @@ export const sendMessage = asyncHandler(async (req: CustomRequest, res: Response
     return;
   }
 
-  if (!Types.ObjectId.isValid(chatId)) {
-    res.status(400).json({ message: "Invalid chat ID format" });
-    return;
-  }
-
-  const newMessage = {
+  const newMessage: any = {
     sender: req.user._id,
     content,
     chat: new Types.ObjectId(chatId),
   };
+
+  if (file) {
+    newMessage.fileUrl = `/uploads/${file.filename}`;
+    newMessage.fileType = file.mimetype;
+  }
 
   try {
     let message = await Message.create(newMessage);

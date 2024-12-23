@@ -80,8 +80,8 @@ const MyChats: React.FC = ({fetchAgain, setFetchAgain}) => {
   };
 
   return (
-    <div className="w-full h-100vh flex">
-    <div className="p-4 w-[30%]">
+    <div className="w-full h-screen flex ">
+    <div className="p-4 w-[30%] h-full bg-[#25262d]">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">My Chats</h2>
         <button

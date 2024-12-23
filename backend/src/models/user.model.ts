@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   pic: string;
-  // isAdmin: boolean;
+  isAdmin: boolean;
 }
 
 const userSchema = new Schema<IUser>(
@@ -28,11 +28,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
     },
-    // isGod: { 
-    //     type: Boolean, 
-    //     required: true, 
-    //     default: false 
-    // },
+    isAdmin: { 
+        type: Boolean, 
+        required: true, 
+        default: false 
+    },
   },
   { timestamps: true }
 );

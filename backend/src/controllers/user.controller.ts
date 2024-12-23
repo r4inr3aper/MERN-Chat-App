@@ -66,13 +66,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(404).json({ success: false, message: "User not found!" });
+      res.status(404).json({ success: false, message: "User doesn't exist!" });
       return;
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(401).json({ success: false, message: "Invalid email or password!" });
+      res.status(401).json({ success: false, message: "Invalid password!" });
       return;
     }
 
@@ -128,3 +128,37 @@ export const allUsers = async (req: AuthenticatedRequest, res: Response): Promis
   } catch (error) {
     res.status(500).json({ success: false, message: "An error occurred", error });
   }};
+  
+  export const getUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.user?._id;
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: "Unauthorized access!" });
+        return;
+      }
+
+      const user = await User.findById(userId).select("name email isAdmin pic");
+
+      if (!user) {
+        res.status(404).json({ success: false, message: "User not found!" });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        user: {
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+          pic: user.pic,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "An error occurred while fetching user credentials.",
+        error: (error as Error).message,
+      });
+    }
+  };

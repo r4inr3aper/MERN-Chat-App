@@ -4,7 +4,8 @@ export interface IMessage extends Document {
   sender: Types.ObjectId;
   content: string;
   chat: Types.ObjectId;
-  readBy: Types.ObjectId[];
+  fileUrl?: string; 
+  fileType?: string;
 }
 
 const messageSchema = new Schema<IMessage>(
@@ -16,20 +17,18 @@ const messageSchema = new Schema<IMessage>(
     },
     content: {
       type: String,
-      trim: true,
-      required: true,
     },
     chat: {
       type: Schema.Types.ObjectId,
       ref: "Chat",
       required: true,
     },
-    readBy: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    fileUrl: {
+      type: String,
+    },
+    fileType: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
