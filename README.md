@@ -84,6 +84,7 @@ Password: 123456
 
 ### 📦 Folder Structure
 
+```text
 MERN-Chat-App/
 ├── backend/        # Node + Express + MongoDB
 │   └── controllers/
@@ -95,6 +96,7 @@ MERN-Chat-App/
 │   └── pages/
 │   └── context/
 └── README.md
+```
 
 ## 📝 License
 
